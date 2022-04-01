@@ -19,68 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security -->
 
-## 0.2.2 - 2022-03-07
-
-### Changed
-
-- Bump deps: 
-  + `bee-gossip` ~> 0.6.0;
-  + `bee-protocol` ~> 0.2.2;
-
-## 0.2.1 - 2022-03-04
-
-### Changed
-
-- Update `bee-gossip` dependency to 0.5.0;
-
-### Fixed
-
-- Convert `None` to `0` for balance response;
-
-## 0.2.0 - 2022-01-28
+## 0.2.0 - 2022-XX-XX
 
 ### Added
 
 - Full implementation of the [Node REST API](https://github.com/iotaledger/tips/blob/main/tips/TIP-0013/tip-0013.md);
-- `BasicOutputDto`;
-- `AliasOutputDto`;
-- `FoundryOutputDto`;
-- `NftOutputDto`;
-- `AliasAddressDto`;
-- `NftAddressDto`;
-- `AliasUnlockBlockDto`;
-- `NftUnlockBlockDto`;
-- `NativeTokenDto`;
-- `TokenIdDto`;
-- `U256Dto`;
-- `FeatureBlockDto`;
-- `SenderFeatureBlockDto`;
-- `IssuerFeatureBlockDto`;
-- `StorageDepositReturnFeatureBlockDto`;
-- `TimelockFeatureBlockDto`;
-- `ExpirationFeatureBlockDto`;
-- `IndexationFeatureBlockDto`;
-- `MetadataFeatureBlockDto`;
-- `AliasIdDto`;
-- `TokenSchemeDto`;
-- `NftIdDto`;
-
-### Changed
-
-- Serialize and deserialize the `DTO` types using `packable` instead of `bee-common::packable`;
-- Changed `OutputResponse` type: added `milestone_index`, added `milestone_timestamp`, removed `dust_allowed`;
-- Changed `OutputsAddressResponse` type: removed `address_type`, removed `address`;
-- Merge `InvalidSyntaxField` with `InvalidSemanticField` to `InvalidField`;
-- Renamed `IndexationPayloadDto` to `TaggedDataPayloadDto`;
-- Bump API version from `v1` to `v2`;
-
-### Removed
-
-- `OutputDto::SignatureLockedSingle`;
-- `OutputDto::SignatureLockedDustAllowance`;
-- `SignatureLockedSingleOutputDto`;
-- `SignatureLockedDustAllowanceOutputDto`;
-- Removed `SuccessBody` with its data envelope field;
 
 ## 0.1.7 - 2021-12-08
 

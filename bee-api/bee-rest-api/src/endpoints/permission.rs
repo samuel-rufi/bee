@@ -1,6 +1,9 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::endpoints::rejection::CustomRejection;
+
+use warp::{reject, Filter, Rejection};
 
 use std::net::{IpAddr, SocketAddr};
 

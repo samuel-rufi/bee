@@ -1,37 +1,57 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::sync::Arc;
-
-use axum::{
-    extract::{Extension, Json, Path},
-    response::IntoResponse,
-    routing::get,
-    Router,
-};
-use bee_message::{payload::Payload, semantic::ConflictReason, MessageId};
-
 use crate::{
-    endpoints::{error::ApiError, storage::StorageBackend, ApiArgsFullNode, CONFIRMED_THRESHOLD},
-    types::{dtos::LedgerInclusionStateDto, responses::MessageMetadataResponse},
+    endpoints::{
+        config::ROUTE_MESSAGE_METADATA, filters::with_tangle, path_params::message_id, permission::has_permission,
+        rejection::CustomRejection, storage::StorageBackend, CONFIRMED_THRESHOLD,
+    },
+    types::{body::SuccessBody, dtos::LedgerInclusionStateDto, responses::MessageMetadataResponse},
 };
 
-pub(crate) fn filter<B: StorageBackend>() -> Router {
-    Router::new().route("/messages/:message_id/metadata", get(message_metadata::<B>))
+use bee_message::{payload::Payload, MessageId};
+use bee_runtime::resource::ResourceHandle;
+use bee_tangle::{ConflictReason, Tangle};
+
+use warp::{filters::BoxedFilter, reject, Filter, Rejection, Reply};
+
+use std::net::IpAddr;
+
+fn path() -> impl Filter<Extract = (MessageId,), Error = warp::Rejection> + Clone {
+    super::path()
+        .and(warp::path("messages"))
+        .and(message_id())
+        .and(warp::path("metadata"))
+        .and(warp::path::end())
+}
+
+pub(crate) fn filter<B: StorageBackend>(
+    public_routes: Box<[String]>,
+    allowed_ips: Box<[IpAddr]>,
+    tangle: ResourceHandle<Tangle<B>>,
+) -> BoxedFilter<(impl Reply,)> {
+    self::path()
+        .and(warp::get())
+        .and(has_permission(ROUTE_MESSAGE_METADATA, public_routes, allowed_ips))
+        .and(with_tangle(tangle))
+        .and_then(message_metadata)
+        .boxed()
 }
 
 pub(crate) async fn message_metadata<B: StorageBackend>(
-    Path(message_id): Path<MessageId>,
-    Extension(args): Extension<Arc<ApiArgsFullNode<B>>>,
-) -> Result<impl IntoResponse, ApiError> {
-    if !args.tangle.is_confirmed_threshold(CONFIRMED_THRESHOLD) {
-        return Err(ApiError::ServiceUnavailable("the node is not synchronized".to_string()));
+    message_id: MessageId,
+    tangle: ResourceHandle<Tangle<B>>,
+) -> Result<impl Reply, Rejection> {
+    if !tangle.is_confirmed_threshold(CONFIRMED_THRESHOLD) {
+        return Err(reject::custom(CustomRejection::ServiceUnavailable(
+            "the node is not synchronized".to_string(),
+        )));
     }
 
-    match args.tangle.get(&message_id).await.map(|m| (*m).clone()) {
+    match tangle.get(&message_id).await.map(|m| (*m).clone()) {
         Some(message) => {
             // existing message <=> existing metadata, therefore unwrap() is safe
-            let metadata = args.tangle.get_metadata(&message_id).await.unwrap();
+            let metadata = tangle.get_metadata(&message_id).await.unwrap();
 
             // TODO: access constants from URTS
             let ymrsi_delta = 8;
@@ -92,7 +112,7 @@ pub(crate) async fn message_metadata<B: StorageBackend>(
                     ledger_inclusion_state = None;
                     conflict_reason = None;
 
-                    let cmi = *args.tangle.get_confirmed_milestone_index();
+                    let cmi = *tangle.get_confirmed_milestone_index();
                     // unwrap() of OMRSI/YMRSI is safe since message is solid
                     if (cmi - *metadata.omrsi().unwrap().index()) > below_max_depth {
                         should_promote = Some(false);
@@ -128,9 +148,9 @@ pub(crate) async fn message_metadata<B: StorageBackend>(
                 )
             };
 
-            Ok(Json(MessageMetadataResponse {
+            Ok(warp::reply::json(&SuccessBody::new(MessageMetadataResponse {
                 message_id: message_id.to_string(),
-                parent_message_ids: message.parents().iter().map(MessageId::to_string).collect(),
+                parent_message_ids: message.parents().iter().map(|id| id.to_string()).collect(),
                 is_solid,
                 referenced_by_milestone_index,
                 milestone_index,
@@ -138,8 +158,10 @@ pub(crate) async fn message_metadata<B: StorageBackend>(
                 conflict_reason: conflict_reason.map(|c| c as u8),
                 should_promote,
                 should_reattach,
-            }))
+            })))
         }
-        None => Err(ApiError::NotFound("can not find message".to_string())),
+        None => Err(reject::custom(CustomRejection::NotFound(
+            "can not find message".to_string(),
+        ))),
     }
 }

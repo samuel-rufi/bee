@@ -1,6 +1,6 @@
 [package]
 name = "bee-rest-api"
-version = "0.2.2"
+version = "0.2.0"
 authors = [ "IOTA Stiftung" ]
 edition = "2021"
 description = "The default REST API implementation for the IOTA Bee node software."
@@ -10,42 +10,36 @@ license = "Apache-2.0"
 keywords = [ "iota", "bee", "framework", "node", "api" ]
 homepage = "https://www.iota.org"
 
-[package.metadata.docs.rs]
-# To build locally:
-# RUSTDOCFLAGS="--cfg doc_cfg" cargo +nightly doc --all-features --no-deps --open
-all-features = true
-rustdoc-args = [ "--cfg", "doc_cfg" ]
-
 [dependencies]
-bee-gossip = { version = "0.6.0", path = "../../bee-network/bee-gossip", default-features = false, optional = true }
-bee-ledger = { version = "0.7.0", path = "../../bee-ledger", default-features = false }
-bee-message = { version = "0.2.0", path = "../../bee-message", default-features = false, features = [ "dto" ] }
+bee-common = { version = "0.6.0", path = "../../bee-common/bee-common", default-features = false, optional = true }
+bee-gossip = { version = "0.4.0", path = "../../bee-network/bee-gossip", default-features = false, optional = true }
+bee-ledger = { version = "0.6.1", path = "../../bee-ledger", default-features = false }
+bee-message = { version = "0.1.6", path = "../../bee-message", default-features = false }
 bee-pow = { version = "0.2.0", path = "../../bee-pow", default-features = false }
-bee-protocol = { version = "0.2.2", path = "../../bee-protocol", default-features = false, optional = true }
+bee-protocol = { version = "0.2.0", path = "../../bee-protocol", default-features = false, optional = true }
 bee-runtime = { version = "0.1.1-alpha", path = "../../bee-runtime", default-features = false, optional = true  }
 bee-storage = { version = "0.9.0", path = "../../bee-storage/bee-storage", default-features = false, optional = true }
-bee-tangle = { version = "0.3.0", path = "../../bee-tangle", default-features = false, optional = true }
+bee-tangle = { version = "0.2.0", path = "../../bee-tangle", default-features = false, optional = true }
 
 async-trait = { version = "0.1.51", default-features = false, optional = true }
-axum = { version = "0.4.8", default-features = false, features = [ "json", "headers" ], optional = true }
 bech32 = { version = "0.8.1", default-features = false, optional = true }
 digest = { version = "0.9.0", default-features = false, optional = true }
 futures = { version = "0.3.17", default-features = false, optional = true }
+hex = { version = "0.4.3", default-features = false }
 iota-crypto = { version = "0.9.1", default-features = false, features = [ "blake2b" ], optional = true }
 log = { version = "0.4.14", default-features = false, optional = true }
 multiaddr = { version = "0.13.0", default-features = false }
 num_cpus = { version = "1.13.0", default-features = false, optional = true }
-packable = { version = "0.2.1", default-features = false }
-prefix-hex = { version = "0.2.0", default-features = false }
-primitive-types = { version = "0.10.1", default-features = false, features = [ "serde" ] }
 serde = { version = "1.0.130", default-features = false, features = [ "derive" ] }
-serde_json = { version = "1.0.79", default-features = false, features = [ "alloc" ] }
+serde_json = { version = "1.0.68", default-features = false, features = [ "alloc" ] }
 thiserror = { version = "1.0.30", default-features = false }
-tokio = { version = "1.17.0", default-features = false, optional = true }
+tokio = { version = "1.12.0", default-features = false, optional = true }
+warp = { version = "0.3.1", default-features = false, optional = true }
 
 [features]
 default = [ "peer" ]
 endpoints = [
+  "bee-common",
   "bee-gossip",
   "bee-protocol/workers",
   "bee-runtime",
@@ -59,6 +53,6 @@ endpoints = [
   "log",
   "num_cpus",
   "tokio",
-  "axum"
+  "warp",
 ]
 peer = [ "bee-protocol" ]

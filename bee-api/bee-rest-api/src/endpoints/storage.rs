@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use bee_ledger::types::{ConsumedOutput, OutputDiff, Receipt};
-use bee_message::{address::Ed25519Address, milestone::MilestoneIndex, output::OutputId};
+use bee_message::{
+    address::Ed25519Address, milestone::MilestoneIndex, output::OutputId, payload::indexation::PaddedIndex, MessageId,
+};
 use bee_storage::{
     access::{AsIterator, Fetch},
     backend,
@@ -10,6 +12,7 @@ use bee_storage::{
 
 pub trait StorageBackend:
     backend::StorageBackend
+    + Fetch<PaddedIndex, Vec<MessageId>>
     + Fetch<Ed25519Address, Vec<OutputId>>
     + Fetch<MilestoneIndex, OutputDiff>
     + Fetch<MilestoneIndex, Vec<Receipt>>
@@ -22,6 +25,7 @@ pub trait StorageBackend:
 
 impl<T> StorageBackend for T where
     T: backend::StorageBackend
+        + Fetch<PaddedIndex, Vec<MessageId>>
         + Fetch<Ed25519Address, Vec<OutputId>>
         + Fetch<MilestoneIndex, OutputDiff>
         + Fetch<MilestoneIndex, Vec<Receipt>>
