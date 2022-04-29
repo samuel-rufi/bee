@@ -36,7 +36,7 @@ pub(crate) fn filter<B: StorageBackend>(
                         public_routes.clone(),
                         allowed_ips.clone(),
                     ))
-                    .and(with_tangle(tangle))
+                    .and(with_tangle(tangle.clone()))
                     .and_then(|milestone_id, tangle| async move { milestone_by_milestone_id(milestone_id, tangle) })
                     .boxed(),
             )
