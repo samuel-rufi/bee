@@ -18,8 +18,8 @@ pub mod submit_message;
 pub mod tips;
 pub mod transaction_included_message;
 pub mod treasury;
-pub mod utxo_changes_by_milestone_id;
-pub mod utxo_changes_by_milestone_index;
+//pub mod utxo_changes_by_milestone_id;
+//pub mod utxo_changes_by_milestone_index;
 
 use std::net::IpAddr;
 
@@ -95,17 +95,17 @@ pub(crate) fn filter<B: StorageBackend>(
         allowed_ips.clone(),
         tangle.clone(),
     ))
-    .or(utxo_changes_by_milestone_id::filter(
-        public_routes.clone(),
-        allowed_ips.clone(),
-        tangle.clone(),
-        storage.clone(),
-    ))
-    .or(utxo_changes_by_milestone_index::filter(
-        public_routes.clone(),
-        allowed_ips.clone(),
-        storage.clone(),
-    ))
+//    .or(utxo_changes_by_milestone_id::filter(
+//        public_routes.clone(),
+//        allowed_ips.clone(),
+//        tangle.clone(),
+//        storage.clone(),
+//    ))
+//    .or(utxo_changes_by_milestone_index::filter(
+//        public_routes.clone(),
+//        allowed_ips.clone(),
+//        storage.clone(),
+//    ))
     .or(output::filter(
         public_routes.clone(),
         allowed_ips.clone(),
