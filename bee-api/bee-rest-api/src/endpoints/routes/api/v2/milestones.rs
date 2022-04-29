@@ -42,17 +42,7 @@ pub(crate) fn filter<B: StorageBackend>(
                     |milestone_index, tangle| async move { milestone_by_milestone_index(milestone_index, tangle) },
                 )
                 .boxed())
-            .or(milestone_id()
-                .and(warp::path::end())
-                .and(warp::get())
-                .and(has_permission(
-                    ROUTE_MILESTONE_BY_MILESTONE_ID,
-                    public_routes.clone(),
-                    allowed_ips.clone(),
-                ))
-                .and(with_tangle(tangle.clone()))
-                .and_then(|milestone_id, tangle| async move { milestone_by_milestone_id(milestone_id, tangle) })
-                .boxed()),
+
         ),
     )
 }
