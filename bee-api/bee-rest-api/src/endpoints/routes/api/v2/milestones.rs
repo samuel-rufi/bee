@@ -81,39 +81,3 @@ pub(crate) fn milestone_by_milestone_id<B: StorageBackend>(
         None => Err(reject::custom(CustomRejection::NotFound("data not found".to_string()))),
     }
 }
-
-pub(crate) fn utxo_changes_by_milestone_id<B: StorageBackend>(
-    milestone_id: MilestoneId,
-    tangle: ResourceHandle<Tangle<B>>,
-    storage: ResourceHandle<B>,
-) -> Result<impl Reply, Rejection> {
-    let milestone_index = match tangle.get_milestone(milestone_id) {
-        Some(milestone_payload) => milestone_payload.essence().index(),
-        None => return Err(reject::custom(CustomRejection::NotFound("data not found".to_string()))),
-    };
-
-    utxo_changes_by_milestone_index::utxo_changes_by_milestone_index(milestone_index, storage)
-}
-
-pub(crate) fn utxo_changes_by_milestone_index<B: StorageBackend>(
-    index: MilestoneIndex,
-    storage: ResourceHandle<B>,
-) -> Result<impl Reply, Rejection> {
-    let fetched = Fetch::<MilestoneIndex, OutputDiff>::fetch(&*storage, &index)
-        .map_err(|_| {
-            reject::custom(CustomRejection::ServiceUnavailable(
-                "can not fetch from storage".to_string(),
-            ))
-        })?
-        .ok_or_else(|| {
-            reject::custom(CustomRejection::NotFound(
-                "can not find Utxo changes for given milestone index".to_string(),
-            ))
-        })?;
-
-    Ok(warp::reply::json(&UtxoChangesResponse {
-        index: *index,
-        created_outputs: fetched.created_outputs().iter().map(OutputId::to_string).collect(),
-        consumed_outputs: fetched.consumed_outputs().iter().map(OutputId::to_string).collect(),
-    }))
-}
