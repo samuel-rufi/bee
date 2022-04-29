@@ -28,31 +28,32 @@ pub(crate) fn filter<B: StorageBackend>(
     super::path().and(
         warp::path("milestones")
             .and(
-                milestone_id()
+                warp::path("by-index")
+                    .and(milestone_index())
+                    .and(warp::path("test"))
                     .and(warp::path::end())
                     .and(warp::get())
                     .and(has_permission(
-                        ROUTE_MILESTONE_BY_MILESTONE_ID,
+                        ROUTE_MILESTONE_BY_MILESTONE_INDEX,
                         public_routes.clone(),
                         allowed_ips.clone(),
                     ))
                     .and(with_tangle(tangle.clone()))
-                    .and_then(|milestone_id, tangle| async move { milestone_by_milestone_id(milestone_id, tangle) })
+                    .and_then(
+                        |milestone_index, tangle| async move { milestone_by_milestone_index(milestone_index, tangle) },
+                    )
                     .boxed(),
             )
-            .or(warp::path("by-index")
-                .and(milestone_index())
+            .or(milestone_id()
                 .and(warp::path::end())
                 .and(warp::get())
                 .and(has_permission(
-                    ROUTE_MILESTONE_BY_MILESTONE_INDEX,
+                    ROUTE_MILESTONE_BY_MILESTONE_ID,
                     public_routes.clone(),
                     allowed_ips.clone(),
                 ))
                 .and(with_tangle(tangle.clone()))
-                .and_then(
-                    |milestone_index, tangle| async move { milestone_by_milestone_index(milestone_index, tangle) },
-                )
+                .and_then(|milestone_id, tangle| async move { milestone_by_milestone_id(milestone_id, tangle) })
                 .boxed()),
     )
 }
