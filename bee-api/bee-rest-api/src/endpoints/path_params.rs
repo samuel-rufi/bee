@@ -41,9 +41,8 @@ pub(super) fn transaction_id() -> impl Filter<Extract = (TransactionId,), Error 
 pub(super) fn milestone_index() -> impl Filter<Extract = (MilestoneIndex,), Error = Rejection> + Copy {
     warp::path::param().and_then(|value: String| async move {
         value
-            .parse::<u32>()
+            .parse::<MilestoneIndex>()
             .map_err(|_| reject::custom(CustomRejection::BadRequest("invalid milestone index".to_string())))
-            .map(MilestoneIndex)
     })
 }
 
